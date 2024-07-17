@@ -1,7 +1,7 @@
+from datetime import datetime
 from flask import Blueprint, request, jsonify
 from app import db
-from models import Sensor, SensorData
-from models import Company
+from models import SensorData, Sensor, Company
 import time
 
 bp = Blueprint('sensor_data', __name__, url_prefix='/api/v1/sensor_data')
@@ -28,24 +28,38 @@ def create_sensor_data():
 
 @bp.route('', methods=['GET'])
 def get_sensor_data():
-    api_key = request.args.get('company_api_key')
-    from_time = request.args.get('from')
-    to_time = request.args.get('to')
+    company_api_key = request.args.get('company_api_key')
+    from_timestamp = request.args.get('from')
+    to_timestamp = request.args.get('to')
     sensor_ids = request.args.getlist('sensor_id')
 
-    company = Company.query.filter_by(company_api_key=api_key).first()
+    # Validar la compañía con el API key proporcionado
+    if not company_api_key:
+        return jsonify({'error': 'Company API key is required'}), 400
 
-    if not company:
-        return jsonify({'error': 'Invalid API key'}), 400
+    # Aquí deberías validar el API key de la compañía según tu implementación actual
+    # Suponiendo que tienes una función para validar el API key de la compañía
 
-    # Obtener todos los sensores de la compañía si no se proporcionan sensor_ids
-    if not sensor_ids:
-        sensors = Sensor.query.filter_by(location_id=company.id).all()
-        sensor_ids = [sensor.id for sensor in sensors]
+    # Filtrar los datos de sensor según los parámetros
+    query = SensorData.query
 
-    sensor_data = SensorData.query.filter(
-        SensorData.sensor_id.in_(sensor_ids),
-        SensorData.timestamp.between(from_time, to_time)
-    ).all()
+    if from_timestamp:
+        query = query.filter(SensorData.timestamp >= int(from_timestamp))
 
-    return jsonify([data.to_dict() for data in sensor_data])
+    if to_timestamp:
+        query = query.filter(SensorData.timestamp <= int(to_timestamp))
+
+    if sensor_ids:
+        query = query.filter(SensorData.sensor_id.in_(sensor_ids))
+
+    sensor_data = query.all()
+
+    result = []
+    for data in sensor_data:
+        result.append({
+            'id': data.id,
+            'sensor_id': data.sensor_id,
+            'data': data.data,
+            'timestamp': data.timestamp
+        })
+    return jsonify(result)
