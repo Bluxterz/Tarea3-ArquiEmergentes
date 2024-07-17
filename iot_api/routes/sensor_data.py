@@ -38,6 +38,11 @@ def get_sensor_data():
     if not company:
         return jsonify({'error': 'Invalid API key'}), 400
 
+    # Si no se proporcionan sensor_ids, devolver todos los datos del sensor de la compañía
+    if not sensor_ids:
+        sensors = Sensor.query.filter_by(location_id=company.id).all()
+        sensor_ids = [str(sensor.id) for sensor in sensors]
+
     sensor_data = SensorData.query.filter(
         SensorData.sensor_id.in_(sensor_ids),
         SensorData.timestamp.between(from_time, to_time)

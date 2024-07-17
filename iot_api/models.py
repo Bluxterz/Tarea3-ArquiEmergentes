@@ -7,8 +7,8 @@ class Admin(db.Model):
 
 class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    company_name = db.Column(db.String(80), nullable=False)
-    company_api_key = db.Column(db.String(80), unique=True, nullable=False)
+    company_name = db.Column(db.String(255), nullable=False)
+    company_api_key = db.Column(db.String(36), nullable=False, unique=True)
 
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)

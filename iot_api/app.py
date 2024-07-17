@@ -1,3 +1,4 @@
+# app.py
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
@@ -11,6 +12,8 @@ def create_app():
     db.init_app(app)
     
     with app.app_context():
+        from models import Company  # Importar aquí para que se registre en el contexto
+        
         from routes.company import bp as company_bp
         from routes.location import bp as location_bp
         from routes.sensor import bp as sensor_bp
@@ -21,9 +24,10 @@ def create_app():
         app.register_blueprint(sensor_bp)
         app.register_blueprint(sensor_data_bp)
         
+        # Crear todas las tablas (si no existen)
         db.create_all()
-        
-        # Ruta para servir index.html
+
+        # Ruta para servir index.html (opcional, si lo necesitas)
         @app.route('/')
         def index():
             return render_template('index.html')

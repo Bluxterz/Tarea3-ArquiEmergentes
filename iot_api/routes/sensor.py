@@ -5,6 +5,23 @@ import uuid
 
 bp = Blueprint('sensor', __name__, url_prefix='/api/v1/sensor')
 
+
+@bp.route('', methods=['GET'])
+def get_sensors():
+    all_sensors = Sensor.query.all()
+    sensors_list = []
+    for sensor in all_sensors:
+        sensors_list.append({
+            'id': sensor.id,
+            'location_id': sensor.location_id,
+            'sensor_name': sensor.sensor_name,
+            'sensor_category': sensor.sensor_category,
+            'sensor_meta': sensor.sensor_meta,
+            'sensor_api_key': sensor.sensor_api_key
+        })
+    return jsonify(sensors_list)
+
+
 @bp.route('', methods=['POST'])
 def create_sensor():
     data = request.get_json()

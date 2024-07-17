@@ -4,6 +4,21 @@ from models import Location
 
 bp = Blueprint('location', __name__, url_prefix='/api/v1/location')
 
+@bp.route('', methods=['GET'])
+def get_locations():
+    all_locations = Location.query.all()
+    locations_list = []
+    for location in all_locations:
+        locations_list.append({
+            'id': location.id,
+            'company_id': location.company_id,
+            'location_name': location.location_name,
+            'location_country': location.location_country,
+            'location_city': location.location_city,
+            'location_meta': location.location_meta
+        })
+    return jsonify(locations_list)
+
 @bp.route('', methods=['POST'])
 def create_location():
     data = request.get_json()
@@ -16,7 +31,16 @@ def create_location():
     )
     db.session.add(new_location)
     db.session.commit()
-    return jsonify(new_location.id), 201
+    
+    # Retorna un objeto JSON con todos los detalles de la nueva ubicación
+    return jsonify({
+        'id': new_location.id,
+        'company_id': new_location.company_id,
+        'location_name': new_location.location_name,
+        'location_country': new_location.location_country,
+        'location_city': new_location.location_city,
+        'location_meta': new_location.location_meta
+    }), 201
 
 @bp.route('/<int:id>', methods=['GET'])
 def get_location(id):
